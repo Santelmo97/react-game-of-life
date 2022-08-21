@@ -20,14 +20,15 @@ const App: FC = () => {
   const [running, setRunning] = useState(false);
   const [noRows, setNoRows] = useState(20);
   const [noCols, setNoCols] = useState(20);
-  const [speed, setSpeed] = useState(100);
+  const [speed, setSpeed] = useState(1000);
+  const [generation, setGeneration] = useState(0);
   const runningRef = useRef(running);
   runningRef.current = running;
   const [grid, setGrid] = useState(() => {
     return generateGrid(noRows, noCols);
   });
   const getNeighbours = useCallback(
-    (row: number, col: number, currentGrid: any[][]) => {
+    (row: number, col: number, currentGrid: number[][]) => {
       let count = 0;
       for (let i = -1; i < 2; i++) {
         if (col + i >= 0 && col + i < noCols - 1) {
@@ -59,7 +60,7 @@ const App: FC = () => {
         for (let i = 0; i < noRows; i++) {
           for (let k = 0; k < noCols; k++) {
             let neighbors = 0;
-            neighbors = getNeighbours(i, k, prevGrid);
+            neighbors = getNeighbours(i, k, grid);
 
             if (neighbors < 2 || neighbors > 3) {
               prevGrid[i][k] = 0;
@@ -70,6 +71,7 @@ const App: FC = () => {
         }
       });
     });
+    setGeneration((generation) => generation + 1);
     setTimeout(runGame, speed);
   }, [getNeighbours, noCols, noRows, speed]);
 
@@ -78,7 +80,7 @@ const App: FC = () => {
       <Typography variant="h2" color={"#4A4A4A"}>
         Conway's Game of Life
       </Typography>
-      <Grid container direction="row" sx={{ my: 3 }} spacing={2}>
+      <Grid container direction="row" sx={{ my: 4 }} spacing={2}>
         <Grid
           container
           item
@@ -185,7 +187,12 @@ const App: FC = () => {
                     />
                   </Grid>
                   <Grid item>
-                    <Button type="submit" disabled={isSubmitting}>
+                    <Button
+                      type="submit"
+                      disabled={isSubmitting}
+                      variant="contained"
+                      color="secondary"
+                    >
                       Set Game
                     </Button>
                   </Grid>
@@ -196,34 +203,44 @@ const App: FC = () => {
         </Grid>
       </Grid>
 
-      <Box justifyContent="center" alignItems="center" display="flex">
-        <div
-          style={{
-            display: "grid",
-            gridTemplateColumns: `repeat(${noCols},20px)`,
-            marginBottom: "20px",
-          }}
-        >
-          {grid.map((rows, i) =>
-            rows.map((_, j) => (
-              <div
-                key={`${i}-${j}`}
-                style={{
-                  width: 20,
-                  height: 20,
-                  backgroundColor: grid[i][j] ? "darkviolet" : "darkgray",
-                  border: "solid 1px black",
-                }}
-                onClick={() => {
-                  const newGrid = produce(grid, (prevGrid) => {
-                    prevGrid[i][j] = grid[i][j] ? 0 : 1;
-                  });
-                  setGrid(newGrid);
-                }}
-              ></div>
-            ))
-          )}
-        </div>
+      <Box alignItems="center" display="flex">
+        <Grid container spacing={1} direction="column" alignItems="center">
+          <Grid item xs={12}>
+            <Button variant="contained" color="secondary">
+              Generation: {generation}
+            </Button>
+          </Grid>
+          <Grid item xs={12}>
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: `repeat(${noCols},20px)`,
+                marginBottom: "20px",
+              }}
+            >
+              {grid.map((rows, i) =>
+                rows.map((_, j) => (
+                  <div
+                    key={`${i}-${j}`}
+                    style={{
+                      width: 20,
+                      height: 20,
+                      backgroundColor: grid[i][j] ? "darkviolet" : "black",
+                      border: "solid 1px grey",
+                    }}
+                    onClick={() => {
+                      setGrid(
+                        produce(grid, (prevGrid) => {
+                          prevGrid[i][j] = grid[i][j] ? 0 : 1;
+                        })
+                      );
+                    }}
+                  ></div>
+                ))
+              )}
+            </div>
+          </Grid>
+        </Grid>
       </Box>
     </div>
   );
