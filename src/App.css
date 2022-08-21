@@ -36,3 +36,6 @@
     transform: rotate(360deg);
   }
 }
+.textField {
+  background: rgb(255, 255, 255);
+}
